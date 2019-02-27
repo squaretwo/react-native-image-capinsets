@@ -4,8 +4,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 
 
@@ -26,11 +28,25 @@ public class RCTImageLoaderTask extends AsyncTask<String, Void, Bitmap> {
     protected Bitmap doInBackground(String... params) {
         if (mUri.startsWith("http")) {
             return loadBitmapByExternalURL(mUri);
+        } else if (mUri.startsWith("file:")) {
+            return loadBitmapByFileUrl(mUri);
         }
 
         return loadBitmapByLocalResource(mUri);
     }
 
+    private Bitmap loadBitmapByFileUrl(String url) {
+        Bitmap bitmap = null;
+
+        try {
+            String filePath = new URI(url).getPath();
+            bitmap = BitmapFactory.decodeFile(filePath);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        return bitmap;
+    }
 
     private Bitmap loadBitmapByLocalResource(String uri) {
         return BitmapFactory.decodeResource(mContext.getResources(), mResourceDrawableIdHelper.getResourceDrawableId(mContext, uri));
